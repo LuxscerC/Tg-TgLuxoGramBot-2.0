@@ -29,7 +29,7 @@ logging.basicConfig(level=logging.INFO)
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
-AI_MODEL = "google/gemini-2.5-flash"
+AI_MODEL = "google/gemma-4-31b-it"
 
 if not BOT_TOKEN:
     raise ValueError("Укажите токен бота в переменной окружения BOT_TOKEN")
