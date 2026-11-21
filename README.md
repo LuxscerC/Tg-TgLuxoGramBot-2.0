@@ -1,1 +1,1 @@
-# TgTgLuxoGramBot-2.0
+@TgLuxoGramBot
