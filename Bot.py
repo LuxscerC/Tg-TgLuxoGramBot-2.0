@@ -53,7 +53,9 @@ ALIASES = {
     "start": "start", "старт": "start",
     "help": "help", "помощь": "help", "хелп": "help",
     "ban": "ban", "бан": "ban",
+    "unban": "unban", "разбан": "unban",
     "mute": "mute", "мут": "mute",
+    "unmute": "unmute", "размут": "unmute",
     "kick": "kick", "кик": "kick",
     "kickme": "kickme", "кикми": "kickme",
     "ai": "ai", "ии": "ai", "аи": "ai",
@@ -65,14 +67,16 @@ ALIASES = {
     "ид": "id", "id": "id",
 }
 
-NO_PREFIX_OK = {"бан", "мут", "кик", "реши", "поиск", "погода", "курс", "ид"}
+NO_PREFIX_OK = {"бан", "разбан", "мут", "размут", "кик", "реши", "поиск", "погода", "курс", "ид"}
 
 START_TEXT = "Приветствую!\n/help для полного доступа команд."
 
 HELP_TEXT = (
     "Все команды:\n"
     "Бан время @ – отправляет пользователя в бан на определённый срок.\n"
+    "Разбан @ – снимает бан с пользователя.\n"
     "Мут время @ – отправляет пользователя в мут на определенный срок.\n"
+    "Размут @ – снимает мут с пользователя.\n"
     "Кик @ – кикает пользователя.\n"
     "/kickme – выйти из чата по собственному желанию.\n"
     "Реши пример – решает математические примеры.\n"
@@ -567,6 +571,19 @@ MUTED = ChatPermissions(
     can_add_web_page_previews=False,
 )
 
+UNMUTED = ChatPermissions(
+    can_send_messages=True,
+    can_send_audios=True,
+    can_send_documents=True,
+    can_send_photos=True,
+    can_send_videos=True,
+    can_send_video_notes=True,
+    can_send_voice_notes=True,
+    can_send_polls=True,
+    can_send_other_messages=True,
+    can_add_web_page_previews=True,
+)
+
 
 async def moderate(message, rest, action):
     if message.chat.type not in ("group", "supergroup"):
@@ -611,11 +628,19 @@ async def moderate(message, rest, action):
         if action == "ban":
             await bot.ban_chat_member(message.chat.id, user_id, until_date=until)
             await message.answer(f"{display} забанен {format_duration(seconds)}.")
+        elif action == "unban":
+            await bot.unban_chat_member(message.chat.id, user_id, only_if_banned=True)
+            await message.answer(f"{display} разбанен.")
         elif action == "mute":
             await bot.restrict_chat_member(
                 message.chat.id, user_id, permissions=MUTED, until_date=until
             )
             await message.answer(f"{display} в муте {format_duration(seconds)}.")
+        elif action == "unmute":
+            await bot.restrict_chat_member(
+                message.chat.id, user_id, permissions=UNMUTED
+            )
+            await message.answer(f"{display} размучен.")
         else:
             await bot.ban_chat_member(message.chat.id, user_id)
             await bot.unban_chat_member(message.chat.id, user_id, only_if_banned=True)
@@ -821,6 +846,9 @@ def when_text(moment, now):
 
 def precipitation_kind(snowfall):
     return "снег" if snowfall and snowfall > 0 else "дождь"
+
+
+
 
 
 def precipitation_outlook(data, now):
@@ -1126,7 +1154,7 @@ async def on_text(message: Message):
         await message.answer(START_TEXT)
     elif command == "help":
         await message.answer(HELP_TEXT)
-    elif command in ("ban", "mute", "kick"):
+    elif command in ("ban", "unban", "mute", "unmute", "kick"):
         await moderate(message, rest, command)
     elif command == "kickme":
         await kickme(message)
